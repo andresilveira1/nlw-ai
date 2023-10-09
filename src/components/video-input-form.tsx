@@ -1,5 +1,5 @@
-import { Label } from '@radix-ui/react-label'
-import { Separator } from '@radix-ui/react-separator'
+import { Label } from './ui/label'
+import { Separator } from './ui/separator'
 import { FileVideo, Upload } from 'lucide-react'
 import { Button } from './ui/button'
 import { Textarea } from './ui/textarea'
@@ -10,7 +10,18 @@ import { api } from '@/lib/axios'
 
 type Status = 'waiting' | 'converting' | 'uploading' | 'generating' | 'success'
 
-export function VideoInputForm() {
+const statusMessages = {
+  converting: 'Convertendo...',
+  generating: 'Transcrevendo...',
+  uploading: 'Carregando...',
+  success: 'Sucesso!',
+}
+
+interface VideoInputFormProps {
+  onVideoUploaded: (id: string) => void
+}
+
+export function VideoInputForm(props: VideoInputFormProps) {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [status, setStatus] = useState<Status>('waiting')
 
@@ -98,6 +109,8 @@ export function VideoInputForm() {
     })
 
     setStatus('success')
+
+    props.onVideoUploaded(videoId)
   }
 
   const previewURL = useMemo(() => {
@@ -148,8 +161,19 @@ export function VideoInputForm() {
         />
       </div>
 
-      <Button disabled={status !== 'waiting'} type="submit" className="w-full">
-        Carregar vídeo <Upload className="w-4 h-4 ml-2" />
+      <Button
+        data-success={status === 'success'}
+        disabled={status !== 'waiting'}
+        type="submit"
+        className="w-full data-[success=true]:bg-emerald-400"
+      >
+        {status === 'waiting' ? (
+          <>
+            Carregar vídeo <Upload className="w-4 h-4 ml-2" />
+          </>
+        ) : (
+          statusMessages[status]
+        )}
       </Button>
     </form>
   )
